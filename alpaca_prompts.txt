@@ -1,0 +1,45 @@
+default:
+
+prompt = f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+    ### Instruction:
+    Answer the question.
+
+    ### Input:
+    {question}
+
+    ### Response:"""
+
+
+
+default_shorter_answer_instruction:
+
+prompt = f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+    ### Instruction:
+    Answer the question concisely.
+
+    ### Input:
+    {question}
+
+    ### Response:"""
+
+
+no_input: 
+
+prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+    ### Instruction:
+    {question}
+
+    ### Response:"""
+
+
+
+no_input_shorter_answer:
+prompt = f"""Below is an instruction that describes a task. Write a short response that appropriately completes the request.
+
+    ### Instruction:
+    {question}
+
+    ### Response:"""
