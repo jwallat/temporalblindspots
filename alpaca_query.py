@@ -3,7 +3,8 @@ import wandb
 from argparse import ArgumentParser
 from src.evaluation import evaluate
 from src.alpaca import get_alpaca_completions
-from src.utils import load_dataset, load_json
+from src.davinci import get_davinci_completions, get_davinci_completions_mp
+from src.utils import load_dataset, load_json, parse_dataset_path
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,15 +14,7 @@ logging.basicConfig(
 
 
 def main(args):
-    if "Event-focused Questions" in args.ds_path:
-        ds_name = "TemporalQuestions"
-        if "Explicit" in args.ds_path:
-            question_type = "explicit"
-        else:
-            question_type = "implicit"
-    else:
-        logging.error("Coundn't find dataset name, aborting")
-        return
+    ds_name, question_type = parse_dataset_path(args)
 
     prompt_dict = load_json(args.prompt_path)
     prompt = prompt_dict[args.model_name][args.prompt_name]
@@ -32,12 +25,25 @@ def main(args):
     wandb.init(project="temporal-ir", name=run_name)
 
     data = load_dataset(args.ds_path)
-    predictions_df = get_alpaca_completions(
-        args.model_name, data["Question"], run_name, prompt
-    )
-    print(predictions_df.head())
+    print(data.head())
 
-    evaluate(data, model_predictions=predictions_df, question_type=question_type)
+    if args.model_name == "alpaca-7b":
+        predictions_df = get_alpaca_completions(
+            args.model_name, data["Question"], run_name, prompt, args.batch_size
+        )
+    elif args.model_name == "text-davinci-003":
+        predictions_df = get_davinci_completions_mp(
+            args.model_name, data["Question"], run_name, prompt, args.batch_size
+        )
+
+    print("Received predictions... here is the head: ", predictions_df.head())
+
+    evaluate(
+        data,
+        model_predictions=predictions_df,
+        ds_name=ds_name,
+        question_type=question_type,
+    )
 
 
 if __name__ == "__main__":
@@ -48,8 +54,14 @@ if __name__ == "__main__":
         required=True,
         help="Path to the output dir that will contain the logs and trained models",
     )
-    parser.add_argument("--model_name", required=True, type=str, choices=["alpaca-7b"])
+    parser.add_argument(
+        "--model_name",
+        required=True,
+        type=str,
+        choices=["alpaca-7b", "stablelm-7b", "text-davinci-003"],
+    )
     parser.add_argument("--prompt_name", required=True, type=str)
+    parser.add_argument("--batch_size", default=16, type=int)
     parser.add_argument(
         "--prompt_path",
         required=True,

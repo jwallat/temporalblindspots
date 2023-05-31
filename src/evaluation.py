@@ -75,19 +75,48 @@ def compute_contains_metric(references, predictions):
     return (num_contains / len(references)) * 100
 
 
+def compute_bertscore(references, predictions):
+
+    preds = []
+    for pred in predictions:
+        preds.append(pred['prediction_text'])
+
+    refs = []
+    for ref in references:
+        refs.append(ref['answers']['text'][0])
+
+    bertscore_metric = load("bertscore")
+
+    results = bertscore_metric.compute(predictions=preds, references=refs, lang="en", idf=True)
+
+    p_bert = sum(results['precision'])/len(results['precision'])
+    r_bert = sum(results['recall'])/len(results['recall'])
+    f1_bert = sum(results['f1'])/len(results['f1'])
+
+    return p_bert, r_bert, f1_bert
+
+
 def compute_metrics(references, predictions):
     squad_metric = load("squad")
     results = squad_metric.compute(predictions=predictions, references=references)
     results["contains"] = compute_contains_metric(references, predictions)
 
+    p_bert, r_bert, f1_bert = compute_bertscore(references, predictions)
+    results["Precision_bert"] = p_bert
+    results["Recall_bert"] = r_bert
+    results["F1_bert"] = f1_bert
+
     return results
 
 
-def evaluate(data, model_predictions, question_type):
+def evaluate(data, model_predictions, ds_name, question_type):
     dataset = split_answers_with_multiple_options(data, question_type)
 
     references = convert_to_references(dataset)
     predictions = convert_to_predictions(model_predictions)
 
     results = compute_metrics(references, predictions)
+
+    for key in results.keys():
+        wandb.log({f"{ds_name} {question_type} {key}": results[key]})
     wandb.log(results)
