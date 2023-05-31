@@ -3,3 +3,10 @@ data/
 wandb/
 *.sub
 __init__.py
+__pycache__
+*.err
+*.out
+models/
+*.csv
+outputs/
+figures/
