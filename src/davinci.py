@@ -35,13 +35,13 @@ def make_completion_request(model_name, prompt, question):
     return response
 
 
-def get_davinci_completions(model_name, data, run_name, prompt, batch_size):
+def get_davinci_completions(model_name, data, run_name, prompt, args):
     openai.api_key = os.getenv("OPENAI_API_KEY")
     job_df = {"q_id": [], "question": [], "answer": []}
 
     # print(data.head())
     for index in tqdm(range(0, len(data))):
-        question = data[index]
+        question = data["Question"][index]
 
         try:
             # if index % 50 == 0 and index != 0:
@@ -67,7 +67,7 @@ def get_davinci_completions(model_name, data, run_name, prompt, batch_size):
     return final_df
 
 
-def get_davinci_completions_mp(model_name, data, run_name, prompt, batch_size):
+def get_davinci_completions_mp(model_name, data, run_name, prompt):
     openai.api_key = os.getenv("OPENAI_API_KEY")
     # job_df = {"q_id": [], "question": [], "answer": []}
 
@@ -84,7 +84,7 @@ def get_davinci_completions_mp(model_name, data, run_name, prompt, batch_size):
     jobs = []
 
     for index in tqdm(range(0, len(data))):
-        question = data[index]
+        question = data["Question"][index]
 
         job = pool.apply_async(handle_qa_pair, (index, question, model_name, prompt, q))
         jobs.append(job)

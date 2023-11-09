@@ -82,6 +82,8 @@ def parse_dataset_path(args):
                     question_type = "relative-time-random_sample"
                 elif "2021" in args.ds_path:
                     question_type = "relative-time-2021_sample"
+            if "reference_types/sample/no_time" in args.ds_path:
+                question_type = "no_time_sample"
 
     elif "templama" in args.ds_path:
         ds_name = "TempLAMA"
