@@ -5,3 +5,7 @@ bert_score
 pandas
 kaleido
 - all the stuff from the LLM inference project (L3S gitlab)
+tensorflow-text
+accelerate
+einops
+xformers
